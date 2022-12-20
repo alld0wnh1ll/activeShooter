@@ -1,7 +1,6 @@
 import pandas as pd
 import pip
 import matplotlib.pyplot as plt
-
 pip.main(["install", "pandas"])
 pip.main(["install", "openpyxl"])
 pip.main(["install", "researchpy"])
@@ -16,6 +15,8 @@ pd.set_option('display.max_columns',10)
 
 df = pd.read_excel(input_file)
 df = df[df['sro delay'] < 50]
+
+
 def remove_outlier(df_in, col_name, baseline):
     q1 = df_in[col_name].quantile(0.00001)
     q3 = df_in[col_name].quantile(0.99999)
@@ -26,7 +27,7 @@ def remove_outlier(df_in, col_name, baseline):
     return df_out
 
 
-
+## 30/10  Baseline NO_FF
 
 df_hide30 = df.query("`fight range` == 10 & `hide range` == 30 & `sro number` == 0"
                      "& `ccw number` == 0 & `friendly fire percent` == 0").sort_values('sro delay')
@@ -37,35 +38,29 @@ no_sro_ccw = df_hide30.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty'].mean()
 no_sro_ccw_response = df_hide30['sro delay'].unique()
 
-#no_sro_cas = df_hide30['sro casualty']
-#no_ccw_cas = df_hide30['ccw casualty']
 
 xb = no_sro_ccw_response
 yb = no_sro_ccw1
 stdb = no_sro_ccw['ui rhf casualty'].std()
 
-## 30/10 with ccw without sro
+## 30/10  CCW ONLY NO_FF
 
 
 df_hide30 = df.query("`fight range` == 10 & `hide range` == 30 & `sro number` == 0"
                      "& `ccw number` == 1 & `friendly fire percent` == 0").sort_values('sro delay')
-#df_hide30 = remove_outlier(df_hide30, 'ui rhf casualty')
+
 no_sro_ccw = df_hide30.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty'].mean()
 no_sro_ccw_response = df_hide30['sro delay'].unique()
-#no_sro_cas = df_hide30['sro casualty']
-#no_ccw_cas = df_hide30['ccw casualty']
+
 
 x0 = no_sro_ccw_response
 y0 = no_sro_ccw1
 std0 = no_sro_ccw['ui rhf casualty'].std()
-#a0 = no_sro_cas
-#b0 = no_ccw_cas
 
 
-## 30/10 without ccw with sro
 
-
+## 30/10 SRO Only No_FF
 
 
 df_hide30 = df.query("`fight range` == 10 & `hide range` == 30 & `sro number` == 1"
@@ -79,45 +74,51 @@ print('mean ',df_hide30.groupby(['fight range']).mean()['ui rhf casualty'])
 no_sro_ccw = df_hide30.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_hide30['sro delay'].unique()
-#no_sro_cas = df_hide30['sro casualty'].loc[df['sro number'] == 1]
-#no_ccw_cas = df_hide30['ccw casualty'].loc[df['sro number'] == 1]
 x1 = no_sro_ccw_response
 y1 = no_sro_ccw1
 std1 = no_sro_ccw['ui rhf casualty'].std()
 
 
 
-## 30/10 with ccw with sro
+## 30/10 Both No_FF
+
 
 df_hide30 = df.query("`fight range` == 10 & `hide range` == 30 & `sro number` == 1"
                     "& `ccw number` == 1 & `friendly fire percent` == 0").sort_values('sro delay')
-#df_hide30 = remove_outlier(df_hide30, 'ui rhf casualty')
 no_sro_ccw = df_hide30.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_hide30['sro delay'].unique()
-#no_sro_cas = df_hide30['sro casualty'].loc[df['sro number'] == 1]
-#no_ccw_cas = df_hide30['ccw casualty'].loc[df['sro number'] == 1]
-
 x2 = no_sro_ccw_response
 y2 = no_sro_ccw1
 std2 = no_sro_ccw['ui rhf casualty'].std()
-#a2 = no_sro_cas
-#b2 = no_ccw_cas
 
-x_base = np.linspace(0,50,50)
-y_base = np.repeat(yb,50)
+
+
+### Line Chart Createion
+x_base = np.linspace(0,50,50) 
+y_base = np.repeat(yb,50)  
 y0b = np.repeat(y0,50)
 
+
+
+### SRO Only line
 plt.plot(x1, y1, 'bo-', label='SRO/NO CCW  std={0:2.2f}'.format(std1))
 for x,y in zip(x1,y1):
     plt.annotate(xy=(x,y+.25), text='{0:2.2f}'.format(y) ,ha='center')
+
+
+### Both Only line
 plt.plot(x2, y2, 'ro-', label='SRO/CCW  std={0:2.2f}'.format(std2))
 for x,y in zip(x2,y2):
     plt.annotate(xy=(x,y+.25), text='{0:2.2f}'.format(y) ,ha='center' )
 
 
+### Baseline
 plt.plot(x_base, y_base, '--', label='NO CCW/NO SRO  std={0:2.2f}'.format(stdb))
 plt.annotate(xy=(x_base[0], y_base[0]-.4), text='Baseline with no support {0:2.2f}'.format(y_base[0]))
+
+
+### CCW Only
 plt.plot(x_base, y0b, '--', label='CCW/NO SRO   std={0:2.2f}'.format(std0))
 
 
@@ -128,6 +129,9 @@ plt.ylabel('Total Casualties (AVG/100 Iterations)')
 plt.title('30 Hide/10 Fight Scenario -- No Friendly Fire')
 plt.legend(loc='upper right')
 plt.show()
+
+
+###  Analysis on SRO, CCW, and Shooter's survivability
 
 
 labels = ['No SRO', '<=10', '<=30', '<=60']
@@ -200,25 +204,26 @@ plt.show()
 
 
 
-## 100 hide without ccw without sro
+## 100 Hide Baseline No_FF
 
 
 
 df_hide100 = df.query("`fight range` == 0 & `hide range` >= 90 & `sro number` == 0"
                      "& `ccw number` == 0 & `friendly fire percent` == 0").sort_values('sro delay')
 df_hide100_b = df_hide100
-#df_hide100 = remove_outlier(df_hide100, 'ui rhf casualty')
+
 no_sro_ccw = df_hide100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty'].mean()
 no_sro_ccw_response = df_hide100['sro delay'].unique()
 
-#no_sro_cas = df_hide100['sro casualty']
-#no_ccw_cas = df_hide100['ccw casualty']
-
 xb = no_sro_ccw_response
 yb = no_sro_ccw1
 stdb = no_sro_ccw['ui rhf casualty'].std()
-## 30/10 with ccw without sro
+
+
+
+
+## 30/10 CCW Only No_FF
 
 
 df_hide100 = df.query("`fight range` == 0 & `hide range` >= 90 & `sro number` == 0"
@@ -236,7 +241,7 @@ std0 = no_sro_ccw['ui rhf casualty'].std()
 
 
 
-## 30/10 without ccw with sro
+## 30/10 SRO Only No_FF
 
 
 
@@ -248,23 +253,20 @@ no_sro_ccw = df_hide100.groupby(['sro delay']).mean()
 
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_hide100['sro delay'].unique()
-#no_sro_cas = df_hide100['sro casualty'].loc[df['sro number'] == 1]
-#no_ccw_cas = df_hide100['ccw casualty'].loc[df['sro number'] == 1]
+
 x1 = no_sro_ccw_response
 y1 = no_sro_ccw1
 std1 = no_sro_ccw['ui rhf casualty'].std()
-#a1 = no_sro_cas
-#b1 = no_ccw_cas
 
 
 
 
 
-## 30/10 with ccw with sro
+
+## 30/10 Both No_FF
 
 f_hide100 = df.query("`fight range` == 0 & `hide range` >= 90 & `sro number` == 1"
                     "& `ccw number` == 1 & `friendly fire percent` == 0").sort_values('sro delay')
-#df_hide100 = remove_outlier(df_hide100, 'ui rhf casualty')
 df_hide100 = df.query("`fight range` == 10 & `hide range` == 30").sort_values('sro delay')
 no_sro_ccw = df_hide100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
@@ -301,6 +303,9 @@ plt.title('All Hide Scenario -- No Friendly Fire')
 plt.legend(loc='upper right')
 plt.show()
 
+
+
+### Analysis on CCW|SRO|Shooter Survivability
 
 
 df_hide100 = df.query("`fight range` == 0 & `hide range` >= 90 & `friendly fire percent` == 0").sort_values('sro delay')
@@ -369,46 +374,43 @@ plt.show()
 
 
 
-## 100 run without ccw without sro
+## 100 Run Baseline No_FF
 
 
 
 df_run100 = df.query("`fight range` == 0 & `hide range` == 0 & `sro number` == 0"
                      "& `ccw number` == 0 & `friendly fire percent` == 0").sort_values('sro delay')
 df_run100_b = df_run100
-#df_run100 = remove_outlier(df_run100, 'ui rhf casualty')
+
 no_sro_ccw = df_run100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty'].mean()
 no_sro_ccw_response = df_run100['sro delay'].unique()
 
-#no_sro_cas = df_run100['sro casualty']
-#no_ccw_cas = df_run100['ccw casualty']
 
 xb = no_sro_ccw_response
 yb = no_sro_ccw1
 stdb = no_sro_ccw['ui rhf casualty'].std()
-## 100 run with ccw without sro
+
+
+
+## 100 CCW Only No_FF
 
 
 df_run100 = df.query("`fight range` == 0 & `hide range` == 0 & `sro number` == 0"
                      "& `ccw number` == 1 & `friendly fire percent` == 0").sort_values('sro delay')
 
-#no_sro_ccw = remove_outlier(no_sro_ccw, 'ui rhf casualty')
-#df_run100 = remove_outlier(df_run100, 'ui rhf casualty', df_run100_b)
+
 no_sro_ccw = df_run100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty'].mean()
 no_sro_ccw_response = df_run100['sro delay'].unique()
-#no_sro_cas = df_run100['sro casualty']
-#no_ccw_cas = df_run100['ccw casualty']
 
 x0 = no_sro_ccw_response
 y0 = no_sro_ccw1
 std0 = no_sro_ccw['ui rhf casualty'].std()
-#a0 = no_sro_cas
-#b0 = no_ccw_cas
 
 
-## 100 run without ccw with sro
+
+## 100 SRO Only No_FF
 
 
 
@@ -416,38 +418,33 @@ std0 = no_sro_ccw['ui rhf casualty'].std()
 df_run100 = df.query("`fight range` == 0 & `hide range` == 0 & `sro number` == 1"
                      "& `ccw number` == 0 & `friendly fire percent` == 0").sort_values('sro delay')
 
-#df_run100 = remove_outlier(df_run100, 'ui rhf casualty')
+
 no_sro_ccw = df_run100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_run100['sro delay'].unique()
-#no_sro_cas = df_run100['sro casualty'].loc[df['sro number'] == 1]
-#no_ccw_cas = df_run100['ccw casualty'].loc[df['sro number'] == 1]
 x1 = no_sro_ccw_response
 y1 = no_sro_ccw1
 std1 = no_sro_ccw['ui rhf casualty'].std()
-#a1 = no_sro_cas
-#b1 = no_ccw_cas
 
 
 
 
 
-## 100 run with ccw with sro
+
+## 100 Run Both No_FF
 
 df_run100 = df.query("`fight range` == 0 & `hide range` == 0 & `sro number` == 1"
                     "& `ccw number` == 1 & `friendly fire percent` == 0").sort_values('sro delay')
-#df_run100 = remove_outlier(df_run100, 'ui rhf casualty')
+
 no_sro_ccw = df_run100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_run100['sro delay'].unique()
-#no_sro_cas = df_run100['sro casualty'].loc[df['sro number'] == 1]
-#no_ccw_cas = df_run100['ccw casualty'].loc[df['sro number'] == 1]
+
 
 x2 = no_sro_ccw_response
 y2 = no_sro_ccw1
 std2 = no_sro_ccw['ui rhf casualty'].std()
-#a2 = no_sro_cas
-#b2 = no_ccw_cas
+
 
 x_base = np.linspace(0,50,50)
 y_base = np.repeat(yb,50)
@@ -478,7 +475,7 @@ plt.show()
 labels = ['No SRO', '<=10', '<=30', '<=60']
 
 
-## 100 run baseline (STOCHASTIC)
+## 100 Run CCW | SRO | Shooter Analysis
 
 
 df_run100 = df.query("`fight range` == 0 & `hide range` >= 0 & `friendly fire percent` == 0").sort_values('sro delay')
@@ -548,10 +545,10 @@ plt.show()
 
 
 
-#FRIENDLY FIRE STARTS HERE
+#FRIENDLY FIRE STARTS HERE  -- Outliers not removed
 
 
-## 30/10 without ccw without sro no friendly fire
+## 30/10 Baseline FF
 
 
 
@@ -561,13 +558,12 @@ no_sro_ccw = df_hide30.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty'].mean()
 no_sro_ccw_response = df_hide30['sro delay'].unique()
 
-#no_sro_cas = df_hide30['sro casualty']
-#no_ccw_cas = df_hide30['ccw casualty']
-
 xb = no_sro_ccw_response
 yb = no_sro_ccw1
 stdb = no_sro_ccw['ui rhf casualty'].std()
-## 30/10 with ccw without sro
+
+
+## 30/10 CCW Only FF
 
 
 df_hide30 = df.query("`fight range` == 10 & `hide range` == 30 & `sro number` == 0"
@@ -575,19 +571,16 @@ df_hide30 = df.query("`fight range` == 10 & `hide range` == 30 & `sro number` ==
 no_sro_ccw = df_hide30.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty'].mean()
 no_sro_ccw_response = df_hide30['sro delay'].unique()
-#no_sro_cas = df_hide30['sro casualty']
-#no_ccw_cas = df_hide30['ccw casualty']
 
 x0 = no_sro_ccw_response
 y0 = no_sro_ccw1
 std0 = no_sro_ccw['ui rhf casualty'].std()
-#a0 = no_sro_cas
-#b0 = no_ccw_cas
 
 
-## 30/10 without ccw with sro
 
 
+
+## 30/10 SRO Only FF
 
 
 df_hide30 = df.query("`fight range` == 10 & `hide range` == 30 & `sro number` == 1"
@@ -595,20 +588,16 @@ df_hide30 = df.query("`fight range` == 10 & `hide range` == 30 & `sro number` ==
 no_sro_ccw = df_hide30.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_hide30['sro delay'].unique()
-#no_sro_cas = df_hide30['sro casualty'].loc[df['sro number'] == 1]
-#no_ccw_cas = df_hide30['ccw casualty'].loc[df['sro number'] == 1]
 x1 = no_sro_ccw_response
 y1 = no_sro_ccw1
 std1 = no_sro_ccw['ui rhf casualty'].std()
-#a1 = no_sro_cas
-#b1 = no_ccw_cas
 
 
 
 
 
 
-## 30/10 with ccw with sro
+## 30/10 Both FF
 
 f_hide30 = df.query("`fight range` == 10 & `hide range` == 30 & `sro number` == 1"
                     "& `ccw number` == 1 & `friendly fire percent` > 0").sort_values('sro delay')
@@ -616,14 +605,9 @@ df_hide30 = df.query("`fight range` == 10 & `hide range` == 30").sort_values('sr
 no_sro_ccw = df_hide30.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_hide30['sro delay'].unique()
-#no_sro_cas = df_hide30['sro casualty'].loc[df['sro number'] == 1]
-#no_ccw_cas = df_hide30['ccw casualty'].loc[df['sro number'] == 1]
-
 x2 = no_sro_ccw_response
 y2 = no_sro_ccw1
 std2 = no_sro_ccw['ui rhf casualty'].std()
-#a2 = no_sro_cas
-#b2 = no_ccw_cas
 
 x_base = np.linspace(0,50,50)
 y_base = np.repeat(yb,50)
@@ -646,9 +630,14 @@ plt.plot(x_base, y0b, '--', label='CCW/NO SRO   std={0:2.2f}'.format(std0))
 
 plt.xlabel('SRO Response Time (seconds)')
 plt.ylabel('Total Casualties (AVG/100 Iterations)')
-plt.title('30 Hide/10 Fight Scenario -- No Friendly Fire')
+plt.title('30 Hide/10 Fight Scenario - Friendly Fire')
 plt.legend(loc='upper right')
 plt.show()
+
+
+
+
+### Friendly Fire Assessment on 30/10
 
 
 labels = x1
@@ -691,7 +680,7 @@ rects4 = ax.bar(x , friendly_death, width, label='Friendly Fire Incident Likelih
 # Add some text for labels, title and custom x-axis tick labels, etc.
 ax.set_ylabel('Percentage of Samples that had a Friendly Fire Incident (Percentage %)')
 ax.set_xlabel('SRO Response Time (seconds)')
-ax.set_title('Percentage of Samples with Friendly Fire Incident')
+ax.set_title('Percentage of Samples with Friendly Fire Incident 30-Hide/10-Fight')
 ax.set_xticks(x)
 ax.set_xticklabels(labels)
 ax.legend()
@@ -721,7 +710,7 @@ plt.show()
 
 
 
-## 100 hide without ccw without sro
+## 100 Hide Baseline FF
 
 
 
@@ -735,7 +724,9 @@ no_sro_ccw_response = df_hide100['sro delay'].unique()
 xb = no_sro_ccw_response
 yb = no_sro_ccw1
 stdb = no_sro_ccw['ui rhf casualty'].std()
-## hide 100
+
+
+## 100 Hide CCW Only FF
 
 
 df_hide100 = df.query("`fight range` == 0 & `hide range` >= 90 & `sro number` == 0"
@@ -747,10 +738,7 @@ x0 = no_sro_ccw_response
 y0 = no_sro_ccw1
 std0 = no_sro_ccw['ui rhf casualty'].std()
 
-##hide 100
-
-
-
+## 100 Hide SRO Only FF
 
 df_hide100 = df.query("`fight range` == 0 & `hide range` >= 90 & `sro number` == 1"
                      "& `ccw number` == 0 & `friendly fire percent` > 0").sort_values('sro delay')
@@ -763,10 +751,7 @@ std1 = no_sro_ccw['ui rhf casualty'].std()
 
 
 
-
-
-
-## df_hide 100
+## 100 Hide CCW Only FF
 
 df_hide100 = df.query("`fight range` == 0 & `hide range` >= 90 & `sro number` == 1"
                     "& `ccw number` == 1 & `friendly fire percent` > 0").sort_values('sro delay')
@@ -774,14 +759,9 @@ df_hide100 = df.query("`fight range` == 10 & `hide range` == 30").sort_values('s
 no_sro_ccw = df_hide100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_hide100['sro delay'].unique()
-#no_sro_cas = df_hide100['sro casualty'].loc[df['sro number'] == 1]
-#no_ccw_cas = df_hide100['ccw casualty'].loc[df['sro number'] == 1]
-
 x2 = no_sro_ccw_response
 y2 = no_sro_ccw1
 std2 = no_sro_ccw['ui rhf casualty'].std()
-#a2 = no_sro_cas
-#b2 = no_ccw_cas
 
 x_base = np.linspace(0,50,50)
 y_base = np.repeat(yb,50)
@@ -804,11 +784,11 @@ plt.plot(x_base, y0b, '--', label='CCW/NO SRO   std={0:2.2f}'.format(std0))
 
 plt.xlabel('SRO Response Time (seconds)')
 plt.ylabel('Total Casualties (AVG/100 Iterations)')
-plt.title('All Hide Scenario -- No Friendly Fire')
+plt.title('All Hide Scenario - Friendly Fire')
 plt.legend(loc='upper right')
 plt.show()
 
-
+### CCW | SRO | SHOOTER SURVIVABILITY Analysis FF
 
 labels = ['No SRO', '<=10', '<=30', '<=60']
 df_hide30 = df.query("`fight range` == 0 & `hide range` >= 90 & `friendly fire percent` > 0").sort_values('sro delay')
@@ -885,7 +865,7 @@ plt.show()
 
 
 
-## 100 run without ccw without sro
+## 100 run Baseline FF
 
 
 
@@ -895,13 +875,9 @@ no_sro_ccw = df_run100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty'].mean()
 no_sro_ccw_response = df_run100['sro delay'].unique()
 
-#no_sro_cas = df_run100['sro casualty']
-#no_ccw_cas = df_run100['ccw casualty']
-
 xb = no_sro_ccw_response
 yb = no_sro_ccw1
 stdb = no_sro_ccw['ui rhf casualty'].std()
-## 100 run with ccw without sro
 
 
 df_run100 = df.query("`fight range` == 0 & `hide range` == 0 & `sro number` == 0"
@@ -909,19 +885,11 @@ df_run100 = df.query("`fight range` == 0 & `hide range` == 0 & `sro number` == 0
 no_sro_ccw = df_run100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty'].mean()
 no_sro_ccw_response = df_run100['sro delay'].unique()
-#no_sro_cas = df_run100['sro casualty']
-#no_ccw_cas = df_run100['ccw casualty']
-
 x0 = no_sro_ccw_response
 y0 = no_sro_ccw1
 std0 = no_sro_ccw['ui rhf casualty'].std()
-#a0 = no_sro_cas
-#b0 = no_ccw_cas
 
-
-## 100 run without ccw with sro
-
-
+## 100 Run SRO Only FF
 
 
 df_run100 = df.query("`fight range` == 0 & `hide range` == 0 & `sro number` == 1"
@@ -929,33 +897,23 @@ df_run100 = df.query("`fight range` == 0 & `hide range` == 0 & `sro number` == 1
 no_sro_ccw = df_run100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_run100['sro delay'].unique()
-#no_sro_cas = df_run100['sro casualty'].loc[df['sro number'] == 1]
-#no_ccw_cas = df_run100['ccw casualty'].loc[df['sro number'] == 1]
 x1 = no_sro_ccw_response
 y1 = no_sro_ccw1
 std1 = no_sro_ccw['ui rhf casualty'].std()
-#a1 = no_sro_cas
-#b1 = no_ccw_cas
 
 
 
-
-
-## 100 run with ccw with sro
+## 100 Run Both FF
 
 df_run100 = df.query("`fight range` == 0 & `hide range` == 0 & `sro number` == 1"
                     "& `ccw number` == 1 & `friendly fire percent` > 0").sort_values('sro delay')
 no_sro_ccw = df_run100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_run100['sro delay'].unique()
-#no_sro_cas = df_run100['sro casualty'].loc[df['sro number'] == 1]
-#no_ccw_cas = df_run100['ccw casualty'].loc[df['sro number'] == 1]
 
 x2 = no_sro_ccw_response
 y2 = no_sro_ccw1
 std2 = no_sro_ccw['ui rhf casualty'].std()
-#a2 = no_sro_cas
-#b2 = no_ccw_cas
 
 x_base = np.linspace(0,50,50)
 y_base = np.repeat(yb,50)
@@ -981,6 +939,10 @@ plt.ylabel('Total Casualties (AVG/100 Iterations)')
 plt.title('All Run Scenario -- Friendly Fire')
 plt.legend(loc='upper right')
 plt.show()
+
+
+
+## CCW | SRO | Shooters Surviability Analysis FF
 
 
 labels = ['No SRO', '<=10', '<=30', '<=60']
@@ -1054,6 +1016,14 @@ autolabel(rects4)
 fig.tight_layout()
 
 plt.show()
+
+
+
+
+#### Overall Macro Bar Graph for All Scenarios No FF
+
+
+
 
 ### aggregation bar
 #30/10
