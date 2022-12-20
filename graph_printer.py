@@ -272,26 +272,38 @@ no_sro_ccw = df_hide100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_hide100['sro delay'].unique()
 
-
 x2 = no_sro_ccw_response
 y2 = no_sro_ccw1
 std2 = no_sro_ccw['ui rhf casualty'].std()
 
 
+
+
+### Graph 100 Hide No_FF
 x_base = np.linspace(0,50,50)
 y_base = np.repeat(yb,50)
 y0b = np.repeat(y0,50)
 
+
+### SRO Only Line
 plt.plot(x1, y1, 'bo-', label='SRO/NO CCW  std={0:2.2f}'.format(std1))
 for x,y in zip(x1,y1):
     plt.annotate(xy=(x,y+2), text='{0:2.2f}'.format(y) ,ha='center')
+
+
+### Both Line
 plt.plot(x2, y2, 'ro-', label='SRO/CCW  std={0:2.2f}'.format(std2))
 for x,y in zip(x2,y2):
     plt.annotate(xy=(x,y+2), text='{0:2.2f}'.format(y) ,ha='center' )
 
 
+
+### Baseline Line
 plt.plot(x_base, y_base, '--', label='NO CCW/NO SRO  std={0:2.2f}'.format(stdb))
 plt.annotate(xy=(x_base[0], y_base[0]-1.5), text='Baseline with no support {0:2.2f}'.format(y_base[0]))
+
+
+### CCW Only Line
 plt.plot(x_base, y0b, '--', label='CCW/NO SRO   std={0:2.2f}'.format(std0))
 
 
@@ -393,7 +405,7 @@ stdb = no_sro_ccw['ui rhf casualty'].std()
 
 
 
-## 100 CCW Only No_FF
+## 100 Run CCW Only No_FF
 
 
 df_run100 = df.query("`fight range` == 0 & `hide range` == 0 & `sro number` == 0"
@@ -410,7 +422,7 @@ std0 = no_sro_ccw['ui rhf casualty'].std()
 
 
 
-## 100 SRO Only No_FF
+## 100 Run SRO Only No_FF
 
 
 
@@ -439,27 +451,34 @@ df_run100 = df.query("`fight range` == 0 & `hide range` == 0 & `sro number` == 1
 no_sro_ccw = df_run100.groupby(['sro delay']).mean()
 no_sro_ccw1 = no_sro_ccw['ui rhf casualty']
 no_sro_ccw_response = df_run100['sro delay'].unique()
-
-
 x2 = no_sro_ccw_response
 y2 = no_sro_ccw1
 std2 = no_sro_ccw['ui rhf casualty'].std()
 
 
+### Graph 100 Run No_FF
+
 x_base = np.linspace(0,50,50)
 y_base = np.repeat(yb,50)
 y0b = np.repeat(y0,50)
 
+### SRO Only Line
 plt.plot(x1, y1, 'bo-', label='SRO/NO CCW  std={0:2.2f}'.format(std1))
 for x,y in zip(x1,y1):
     plt.annotate(xy=(x,y+.15), text='{0:2.2f}'.format(y) ,ha='center')
+
+
+### Both Line
 plt.plot(x2, y2, 'ro-', label='SRO/CCW  std={0:2.2f}'.format(std2))
 for x,y in zip(x2,y2):
     plt.annotate(xy=(x,y+.15), text='{0:2.2f}'.format(y) ,ha='center' )
 
 
+### Baseline Line
 plt.plot(x_base, y_base, '--', label='NO CCW/NO SRO  std={0:2.2f}'.format(stdb))
 plt.annotate(xy=(x_base[0], y_base[0]-.55), text='Baseline with no support {0:2.2f}'.format(y_base[0]))
+
+### CCW Line
 plt.plot(x_base, y0b, '--', label='CCW/NO SRO   std={0:2.2f}'.format(std0))
 
 
@@ -865,7 +884,7 @@ plt.show()
 
 
 
-## 100 run Baseline FF
+## 100 Run Baseline FF
 
 
 
